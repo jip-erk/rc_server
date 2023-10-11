@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/page.css') }}">
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        function startStream() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/start_stream", true);
+            xhr.send();
+        }
+    </script>
+</head>
+
+<body>
+    <center>
+        <img id="video-stream" width='640' height='480' autoplay playsinline>
+    </center>
+
+    <script>
+
+        var video = document.getElementById('video-stream');
+        video.src = "/video_feed";
+        let throttle = 0
+
+        let dir = [0, 0, 0]
+
+        let controllerIndex = null;
+        window.addEventListener('gamepadconnected', (event) => {
+            console.log('connected');
+            controllerIndex = event.gamepad.index;
+            controllerInput();
+        });
+
+        window.addEventListener('gamepaddisconnected', (event) => {
+            console.log('disconnected');
+            controllerIndex = null;
+        });
+
+        var socket = io.connect('http://192.168.1.136:5002');
+
+        socket.on('connect', function () {
+            console.log('WebSocket connection established.');
+        });
+
+        function controllerInput() {
+            if (controllerIndex === null) return;
+            const gamepad = navigator.getGamepads()[controllerIndex];
+            dir[0] = Math.round(gamepad.axes[0])
+            dir[1] = Math.round(parseFloat(gamepad.buttons[6].value) * 100) / 100
+            dir[2] = Math.round(parseFloat(gamepad.buttons[7].value) * 100) / 100;
+
+            sendThrottleValue(dir);
+
+            requestAnimationFrame(controllerInput);
+        }
+
+        function sendThrottleValue(t) {
+            socket.send(t);
+        }
+
+        socket.on('disconnect', function () {
+            console.log('WebSocket connection closed.');
+        });
+    </script>
+</body>
+
+</html>
