@@ -3,3 +3,22 @@ body {
     margin: 0;
     padding: 0;
 }
+
+
+.container {
+    height: 100vh;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.image {
+    z-index: 99;
+    position: absolute;
+    bottom: 0;
+}
+
+.footer {
+    height: 200px;
+}
